@@ -24,6 +24,27 @@ class RouteSubscriber extends RouteSubscriberBase {
         )
       );
     }
+
+    $entity_types = \Drupal::entityTypeManager()->getDefinitions();
+    foreach ($entity_types as $entity_type) {
+      // Node already handled.
+      if ($entity_type->id() == 'node') {
+        continue;
+      }
+      if (!$entity_type->hasLinkTemplate('revisions-diff') || !$entity_type->hasHandlerClass('route_provider', 'html_diff')) {
+        continue;
+      }
+
+      $route = $collection->get("entity.{$entity_type->id()}.version_history");
+      if ($route) {
+        $route->addDefaults(
+          array(
+            '_controller' => '\Drupal\diff\Controller\EntityRevisionController::revisionOverview',
+            '_entity_revisions_overview' => $entity_type->id(),
+          )
+        );
+      }
+    }
   }
 
 }
